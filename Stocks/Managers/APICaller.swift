@@ -7,19 +7,46 @@
 
 import Foundation
 
+/// Object to manage api calls
 final class APICaller {
-
+    /// Singleton
     static let shared = APICaller()
     
+    /// Constants
     private struct Constants {
-        static let apiKey = ""
+        static let apiKey = "cnu0gn1r01qt3uhjpi0gcnu0gn1r01qt3uhjpi10"
         static let sanboxApiKey = ""
-        static let baseUrl = ""
+        static let baseUrl = "https://finnhub.io/api/v1/"
     }
     
+    /// Private constructor
     private init() {}
     
     // MARK: - Public
+    
+    /// Search for a company
+    /// - Parameters:
+    ///   - query: Query string (symbol or name)
+    ///   - completion: Callback for result
+    public func search(
+        query: String,
+        completion: @escaping (Result<SearchResponse, Error>) -> Void
+    ) {
+        guard let safeQuery = query.addingPercentEncoding(
+            withAllowedCharacters: .urlQueryAllowed
+        ) else {
+            return
+        }
+        
+        request(
+            url: url(
+                for: .search,
+                queryParams: ["q": safeQuery]
+            ),
+            expecting: SearchResponse.self,
+            completion: completion
+        )
+    }
     
     // get stock info
     
@@ -41,7 +68,22 @@ final class APICaller {
         queryParams: [String: String] = [:]
     ) -> URL? {
         
-        return nil
+        var urlString = Constants.baseUrl + endpoint.rawValue
+        
+        var queryItems = [URLQueryItem]()
+        // Add any parameters
+        for (name, value) in queryParams {
+            queryItems.append(.init(name: name, value: value))
+        }
+        
+        // Add token
+        queryItems.append(.init(name: "token", value: Constants.apiKey))
+        
+        // Convert queri items to suffix string
+        urlString += "?" + queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
+        
+        print("\n\(urlString)\n")
+        return URL(string: urlString)
     }
     
     private func request<T: Codable>(
