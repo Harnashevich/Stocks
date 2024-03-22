@@ -15,3 +15,4 @@ class StockDetailsViewController: UIViewController {
         view.backgroundColor = .systemBackground
     }
 }
+ 

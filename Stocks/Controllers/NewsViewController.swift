@@ -13,18 +13,21 @@ class NewsViewController: UIViewController {
     /// Primary news view
     let tableView: UITableView = {
         let table = UITableView()
-        // Rgister cell, header
-//        table.register(
-//            NewsStoryTableViewCell.self,
-//            forCellReuseIdentifier: NewsStoryTableViewCell.identfier
-//        )
-//        table.register(
-//            NewsHeaderView.self,
-//            forHeaderFooterViewReuseIdentifier: NewsHeaderView.identifier
-//        )
+        // Register cell, header
+        table.register(
+            NewsStoryTableViewCell.self,
+            forCellReuseIdentifier: NewsStoryTableViewCell.identfier
+        )
+        table.register(
+            NewsHeaderView.self,
+            forHeaderFooterViewReuseIdentifier: NewsHeaderView.identifier
+        )
         table.backgroundColor = .clear
         return table
     }()
+    
+    /// Collection of news stories
+    private var stories = [NewsStory]()
     
     /// Type of news
     enum `Type` {
@@ -82,17 +85,17 @@ class NewsViewController: UIViewController {
     
     /// Fetch news models
     private func fetchNews() {
-//        APICaller.shared.news(for: type) { [weak self] result in
-//            switch result {
-//            case .success(let stories):
-//                DispatchQueue.main.async {
-//                    self?.stories = stories
-//                    self?.tableView.reloadData()
-//                }
-//            case .failure(let error):
-//                print(error)
-//            }
-//        }
+        APICaller.shared.news(for: type) { [weak self] result in
+            switch result {
+            case .success(let stories):
+                DispatchQueue.main.async {
+                    self?.stories = stories
+                    self?.tableView.reloadData()
+                }
+            case .failure(let error):
+                print(error)
+            }
+        }
     }
     
     /// Open a story
@@ -107,15 +110,20 @@ class NewsViewController: UIViewController {
 extension NewsViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        0
+        stories.count
     }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        UITableViewCell()
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: NewsStoryTableViewCell.identfier,
+            for: indexPath
+        ) as? NewsStoryTableViewCell else {
+            fatalError()
+        }
+        cell.configure(with: .init(model: stories[indexPath.row]))
+        return cell
     }
-    
-    
 }
 
 extension NewsViewController: UITableViewDelegate {
@@ -125,14 +133,46 @@ extension NewsViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        70
+        NewsHeaderView.preferredHeight
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        nil
+        guard let header = tableView.dequeueReusableHeaderFooterView(
+            withIdentifier: NewsHeaderView.identifier
+        ) as? NewsHeaderView else {
+            return nil
+        }
+        header.configure(with: .init(
+            title: self.type.title,
+            shouldShowAddButton: false
+        ))
+        return header
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+
+        HapticsManager.shared.vibrateForSelection()
+
+        // Open news story
+        let story = stories[indexPath.row]
+        guard let url = URL(string: story.url) else {
+            presentFailedToOpenAlert()
+            return
+        }
+        open(url: url)
+    }
+    
+    /// Present an alert to show an error occurred when opening story
+    private func presentFailedToOpenAlert() {
+        HapticsManager.shared.vibrate(for: .error)
+
+        let alert = UIAlertController(
+            title: "Unable to Open",
+            message: "We were unable to open the article.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
+        present(alert, animated: true)
     }
 }
