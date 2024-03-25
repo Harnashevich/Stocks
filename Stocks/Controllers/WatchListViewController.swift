@@ -16,14 +16,64 @@ class WatchListViewController: UIViewController {
     /// Floating news panel
     private var panel: FloatingPanelController?
     
+    /// Model
+    private var watchlistMap: [String: [CandleStick]] = [:]
+    
+    /// ViewModels
+    private var viewModels: [String] = []
+    
+    /// Main view to render watch list
+    private let tableView: UITableView = {
+        let table = UITableView()
+//        table.register(
+//            WatchListTableViewCell.self,
+//            forCellReuseIdentifier: WatchListTableViewCell.identifier
+//        )
+        return table
+    }()
+    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setUpSearchController()
+        setUpTableView()
+        fetchWatchListData()
         setUpTitleView()
         setUpFloatingPanel()
+    }
+    
+    // MARK: - Private
+    
+    private func fetchWatchListData() {
+        let symbols = PersistenceManager.shared.watchlist
+        
+        let group = DispatchGroup()
+        
+        
+        for symbol in symbols {
+            group.enter()
+            
+            APICaller.shared.marketData(for: symbol) { [weak self] result in
+                guard let self else { return }
+                defer {
+                    group.leave()
+                }
+                
+                switch result {
+                case  .success(let data):
+                    print(data)
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        }
+        
+        group.notify(queue: .main) { [weak self] in
+            guard let self else { return }
+            self.tableView.reloadData()
+        }
     }
 
     /// Sets up tableview
@@ -44,8 +94,6 @@ class WatchListViewController: UIViewController {
         panel.addPanel(toParent: self)
         panel.track(scrollView: vc.tableView)
     }
-    
-    // MARK: - Private
 
     private func setUpTitleView() {
         let titleView = UIView(
@@ -63,6 +111,13 @@ class WatchListViewController: UIViewController {
         titleView.addSubview(label)
 
         navigationItem.titleView = titleView
+    }
+    
+    /// Sets up tableview
+    private func setUpTableView() {
+        view.addSubviews(tableView)
+        tableView.delegate = self
+        tableView.dataSource = self
     }
 }
 
@@ -115,6 +170,28 @@ extension WatchListViewController: SearchResultsViewControllerDelegate {
         let navVC = UINavigationController(rootViewController: vc)
         vc.title = searchResult.description
         present(navVC, animated: true)
+    }
+}
+
+// MARK: - UITableViewDataSource
+
+extension WatchListViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        watchlistMap.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        UITableViewCell()
+    }
+}
+
+// MARK: - UITableViewDelegate
+
+extension WatchListViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }
 
