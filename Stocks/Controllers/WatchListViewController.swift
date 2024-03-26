@@ -16,19 +16,22 @@ class WatchListViewController: UIViewController {
     /// Floating news panel
     private var panel: FloatingPanelController?
     
+    /// Width to track change label geometry
+    static var maxChangeWidth: CGFloat = 0
+    
     /// Model
     private var watchlistMap: [String: [CandleStick]] = [:]
     
     /// ViewModels
-    private var viewModels: [String] = []
+    private var viewModels: [WatchListTableViewCell.ViewModel] = []
     
     /// Main view to render watch list
     private let tableView: UITableView = {
         let table = UITableView()
-//        table.register(
-//            WatchListTableViewCell.self,
-//            forCellReuseIdentifier: WatchListTableViewCell.identifier
-//        )
+        table.register(
+            WatchListTableViewCell.self,
+            forCellReuseIdentifier: WatchListTableViewCell.identifier
+        )
         return table
     }()
     
@@ -44,36 +47,79 @@ class WatchListViewController: UIViewController {
         setUpFloatingPanel()
     }
     
+    /// Layout subviews
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableView.frame = view.bounds
+    }
+    
     // MARK: - Private
     
     private func fetchWatchListData() {
         let symbols = PersistenceManager.shared.watchlist
-        
+
+//        createPlaceholderViewModels()
+
         let group = DispatchGroup()
-        
-        
+
         for symbol in symbols {
             group.enter()
-            
+
             APICaller.shared.marketData(for: symbol) { [weak self] result in
-                guard let self else { return }
                 defer {
                     group.leave()
                 }
-                
+
                 switch result {
-                case  .success(let data):
-                    print(data)
+                case .success(let data):
+                    let candleSticks = data.candleSticks
+                    self?.watchlistMap[symbol] = candleSticks
                 case .failure(let error):
                     print(error)
                 }
             }
         }
-        
+
         group.notify(queue: .main) { [weak self] in
-            guard let self else { return }
-            self.tableView.reloadData()
+            self?.createViewModels()
+            self?.tableView.reloadData()
         }
+    }
+    
+    /// Creates view models from models
+    private func createViewModels() {
+       
+        for (symbol, candleSticks) in watchlistMap {
+//            let changePercentage = candleSticks.getPercentage()
+            let changePercentage = Double.random(in: -1...1)
+            
+            viewModels.append(
+                .init(
+                    symbol: symbol,
+                    companyName: UserDefaults.standard.string(forKey: symbol) ?? "Company",
+                    price: getLatestClosingPrice(from: candleSticks),
+                    changeColor: changePercentage < 0 ? .systemRed : .systemGreen,
+                    changePercentage: .percentage(from: changePercentage), 
+                    chartViewModel: .init(
+                        data: candleSticks.reversed().map { $0.close },
+                        showLegend: false,
+                        showAxis: false,
+                        fillColor: changePercentage < 0 ? .systemRed : .systemGreen
+                    )
+                )
+            )
+        }
+        self.viewModels = viewModels.sorted(by: { $0.symbol < $1.symbol })
+    }
+    
+    /// Gets latest closing price
+    /// - Parameter data: Collection of data
+    /// - Returns: String
+    private func getLatestClosingPrice(from data: [CandleStick]) -> String {
+        guard let closingPrice = data.first?.close else {
+            return ""
+        }
+        return .formatted(number: closingPrice)
     }
 
     /// Sets up tableview
@@ -178,17 +224,29 @@ extension WatchListViewController: SearchResultsViewControllerDelegate {
 extension WatchListViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        watchlistMap.count
+        return viewModels.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        UITableViewCell()
+        guard let cell = tableView.dequeueReusableCell(
+                withIdentifier: WatchListTableViewCell.identifier,
+                for: indexPath
+        ) as? WatchListTableViewCell else {
+            fatalError()
+        }
+        cell.delegate = self
+        cell.configure(with: viewModels[indexPath.row])
+        return cell
     }
 }
 
 // MARK: - UITableViewDelegate
 
 extension WatchListViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return WatchListTableViewCell.preferredHeight
+    }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
@@ -202,5 +260,15 @@ extension WatchListViewController: FloatingPanelControllerDelegate {
     /// - Parameter fpc: Ref of controller
     func floatingPanelDidChangeState(_ fpc: FloatingPanelController) {
         navigationItem.titleView?.isHidden = fpc.state == .full
+    }
+}
+
+// MARK: - WatchListTableViewCellDelegate
+
+extension WatchListViewController: WatchListTableViewCellDelegate {
+    /// Notify delegate of change label width
+    func didUpdateMaxWidth() {
+        // Optimize: Only refresh rows prior to the current row that changes the max width
+        tableView.reloadData()
     }
 }

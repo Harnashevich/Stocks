@@ -92,24 +92,65 @@ final class APICaller {
         numberOfDays: TimeInterval = 7,
         completion: @escaping (Result<MarketDataResponse, Error>) -> Void
     ) {
-        let today = Date().addingTimeInterval(-(Constants.day))
-        let prior = today.addingTimeInterval(-(Constants.day * numberOfDays))
-        request(
-            url: url(
-                for: .marketData,
-                queryParams: [
-                    "symbol": symbol,
-                    "resolution": "1",
-                    "from": "\(Int(prior.timeIntervalSince1970))",
-                    "to": "\(Int(today.timeIntervalSince1970))"
-                ]
-            ),
-            expecting: MarketDataResponse.self,
-            completion: completion
-        )
+        if let localData = readLocalFile(forName: "candlesDataJSON") {
+            decodeData(
+                jsonData: localData,
+                expecting: MarketDataResponse.self
+            ) { result in
+                switch result {
+                case .success(let data):
+                    completion(.success(data))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        }
+        
+//        let today = Date().addingTimeInterval(-(Constants.day))
+//        let prior = today.addingTimeInterval(-(Constants.day * numberOfDays))
+//        request(
+//            url: url(
+//                for: .marketData,
+//                queryParams: [
+//                    "symbol": symbol,
+//                    "resolution": "1",
+//                    "from": "\(Int(prior.timeIntervalSince1970))",
+//                    "to": "\(Int(today.timeIntervalSince1970))"
+//                ]
+//            ),
+//            expecting: MarketDataResponse.self,
+//            completion: completion
+//        )
     }
     
     // MARK: - Private
+    
+    private func decodeData<T: Codable>(
+        jsonData: Data,
+        expecting: T.Type,
+        completion: @escaping (Result<T, Error>) -> Void) {
+            do {
+                let weather = try JSONDecoder().decode(expecting, from: jsonData)
+                completion(.success(weather))
+            } catch {
+                print("decode error")
+            }
+        }
+    
+    func readLocalFile(forName name: String) -> Data? {
+        do {
+            if let bundlePath = Bundle.main.path(
+                forResource: name,
+                ofType: "json"
+            ),
+               let jsonData = try String(contentsOfFile: bundlePath).data(using: .utf8) {
+                return jsonData
+            }
+        } catch {
+            print(error)
+        }
+        return nil
+    }
     
     private enum Endpoint: String {
         case search
