@@ -35,6 +35,9 @@ class WatchListViewController: UIViewController {
         return table
     }()
     
+    /// Observer for watch list updates
+    private var observer: NSObjectProtocol?
+    
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -45,6 +48,7 @@ class WatchListViewController: UIViewController {
         fetchWatchListData()
         setUpTitleView()
         setUpFloatingPanel()
+        setUpObserver()
     }
     
     /// Layout subviews
@@ -55,6 +59,18 @@ class WatchListViewController: UIViewController {
     
     // MARK: - Private
     
+    /// Sets up observer for watch list updates
+    private func setUpObserver() {
+        observer = NotificationCenter.default.addObserver(
+            forName: .didAddToWatchList,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.viewModels.removeAll()
+            self?.fetchWatchListData()
+        }
+    }
+    
     private func fetchWatchListData() {
         let symbols = PersistenceManager.shared.watchlist
 
@@ -62,7 +78,7 @@ class WatchListViewController: UIViewController {
 
         let group = DispatchGroup()
 
-        for symbol in symbols {
+        for symbol in symbols where watchlistMap[symbol] == nil {
             group.enter()
 
             APICaller.shared.marketData(for: symbol) { [weak self] result in
@@ -209,10 +225,13 @@ extension WatchListViewController: SearchResultsViewControllerDelegate {
     /// - Parameter searchResult: Search result that was selected
     func searchResultsViewControllerDidSelect(searchResult: SearchResult) {
         navigationItem.searchController?.searchBar.resignFirstResponder()
-        
+
         HapticsManager.shared.vibrateForSelection()
 
-        let vc = StockDetailsViewController()
+        let vc = StockDetailsViewController(
+            symbol: searchResult.displaySymbol,
+            companyName: searchResult.description
+        )
         let navVC = UINavigationController(rootViewController: vc)
         vc.title = searchResult.description
         present(navVC, animated: true)
@@ -276,7 +295,17 @@ extension WatchListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+
         HapticsManager.shared.vibrateForSelection()
+
+        let viewModel = viewModels[indexPath.row]
+        let vc = StockDetailsViewController(
+            symbol: viewModel.symbol,
+            companyName: viewModel.companyName,
+            candleStickData: watchlistMap[viewModel.symbol] ?? []
+        )
+        let navVC = UINavigationController(rootViewController: vc)
+        present(navVC, animated: true)
     }
 }
 
