@@ -4,7 +4,6 @@ Stocks applications with the official Finnhub API, realtime market data, stock c
 Technology stack:
 
 • MVVM architecture
-
 • Persistent storage 
 
 • Child View Controller
