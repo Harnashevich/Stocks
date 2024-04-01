@@ -1,6 +1,6 @@
 # Stocks
 Stocks application with the official Finnhub API, realtime market data, stock charts, company news, search functionality. <br />
-<sup><sub>(There are mock objects, because it requires a Premium subscription).</sub></sup>
+<sup><sub>(There are mock objects, because it requires a Premium subscription on finnhub.io).</sub></sup>
 
 Technology stack:
 
