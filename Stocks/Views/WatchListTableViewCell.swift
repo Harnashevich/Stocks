@@ -80,9 +80,9 @@ final class WatchListTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.clipsToBounds = true
         addSubviews(
+            miniChartView,
             symbolLabel,
             nameLabel,
-            miniChartView,
             priceLabel,
             changeLabel
         )
@@ -158,7 +158,6 @@ final class WatchListTableViewCell: UITableViewCell {
     /// Configure view
     /// - Parameter viewModel: View ViewModel
     public func configure(with viewModel: ViewModel) {
-        print(viewModel)
         symbolLabel.text = viewModel.symbol
         nameLabel.text = viewModel.companyName
         priceLabel.text = viewModel.price

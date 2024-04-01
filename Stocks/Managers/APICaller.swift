@@ -105,7 +105,8 @@ final class APICaller {
                 }
             }
         }
-        
+// 👇 API response is only available with a Finnhub premium subscription
+//
 //        let today = Date().addingTimeInterval(-(Constants.day))
 //        let prior = today.addingTimeInterval(-(Constants.day * numberOfDays))
 //        request(
@@ -121,6 +122,24 @@ final class APICaller {
 //            expecting: MarketDataResponse.self,
 //            completion: completion
 //        )
+    }
+    
+    /// Get financial metrics
+    /// - Parameters:
+    ///   - symbol: Symbol of company
+    ///   - completion: Result callback
+    public func financialMetrics(
+        for symbol: String,
+        completion: @escaping (Result<FinancialMetricsResponse, Error>) -> Void
+    ) {
+        request(
+            url: url(
+                for: .financials,
+                queryParams: ["symbol": symbol, "metric": "all"]
+            ),
+            expecting: FinancialMetricsResponse.self,
+            completion: completion
+        )
     }
     
     // MARK: - Private

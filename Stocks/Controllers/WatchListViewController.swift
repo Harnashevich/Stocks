@@ -106,8 +106,8 @@ class WatchListViewController: UIViewController {
     private func createViewModels() {
        
         for (symbol, candleSticks) in watchlistMap {
-//            let changePercentage = candleSticks.getPercentage()
-            let changePercentage = Double.random(in: -1...1)
+            let changePercentage = /*candleSticks.getPercentage()*/ Double.random(in: -1...1)
+            let mockCandleSticks = (1...30).map({_ in Double.random(in: 1...100)})
             
             viewModels.append(
                 .init(
@@ -117,7 +117,7 @@ class WatchListViewController: UIViewController {
                     changeColor: changePercentage < 0 ? .systemRed : .systemGreen,
                     changePercentage: .percentage(from: changePercentage), 
                     chartViewModel: .init(
-                        data: candleSticks.reversed().map { $0.close },
+                        data: /*candleSticks.reversed().map { $0.close }*/ mockCandleSticks,
                         showLegend: false,
                         showAxis: false,
                         fillColor: changePercentage < 0 ? .systemRed : .systemGreen
@@ -135,7 +135,7 @@ class WatchListViewController: UIViewController {
         guard let closingPrice = data.first?.close else {
             return ""
         }
-        return .formatted(number: closingPrice)
+        return .formatted(number: /*closingPrice*/ Double.random(in: 0...1000))
     }
 
     /// Sets up tableview
@@ -178,6 +178,7 @@ class WatchListViewController: UIViewController {
     /// Sets up tableview
     private func setUpTableView() {
         view.addSubviews(tableView)
+        tableView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 100, right: 0)
         tableView.delegate = self
         tableView.dataSource = self
     }
@@ -203,7 +204,6 @@ extension WatchListViewController: UISearchResultsUpdating {
             APICaller.shared.search(query: query) { result in
                 switch result {
                 case .success(let response):
-                    print(response)
                     DispatchQueue.main.async {
                         resultsVC.update(with: response.result)
                     }
@@ -268,11 +268,11 @@ extension WatchListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        return true
+        true
     }
 
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-        return .delete
+        .delete
     }
 
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
