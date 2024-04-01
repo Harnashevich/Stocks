@@ -2,7 +2,7 @@
 Stocks application with the official Finnhub API, realtime market data, stock charts, company news, search functionality.
 
 Technology stack:
-• UIKit (programmatically)
+• UIKit (programmatically)<br />
 • MVVM architecture<br />
 • Persistent storage<br />
 • Child View Controller<br />
