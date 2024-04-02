@@ -74,8 +74,6 @@ class WatchListViewController: UIViewController {
     private func fetchWatchListData() {
         let symbols = PersistenceManager.shared.watchlist
 
-//        createPlaceholderViewModels()
-
         let group = DispatchGroup()
 
         for symbol in symbols where watchlistMap[symbol] == nil {
