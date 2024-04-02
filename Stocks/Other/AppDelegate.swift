@@ -10,18 +10,7 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
-//        APICaller.shared.marketData(for: "AAPL", numberOfDays: 1) { result in
-//            switch result {
-//            case .success(let model):
-//                print(model)
-//            case .failure(let error):
-//                print(error)
-//            }
-//        }
         return true
     }
 
