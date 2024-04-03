@@ -13,7 +13,7 @@ The project is based on the iOS Academy course. <br />
 
 <sup><sub>(There are mock objects, because it requires a Premium subscription on finnhub.io).</sub></sup>
 
-## Technology stack:
+## Technology stack
 
 • UIKit (programmatically)<br />
 • MVVM architecture<br />
