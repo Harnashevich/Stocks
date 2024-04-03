@@ -3,7 +3,7 @@
 Stocks application with the official Finnhub API. <br />
 The project is based on the iOS Academy course. <br />
 
-> [!NOTES]
+> [!NOTE]
 > _There are mock objects, because it requires a Premium subscription on finnhub.io._
 
 ## Features
