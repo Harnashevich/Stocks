@@ -2,7 +2,6 @@
 
 Stocks application with the official Finnhub API. <br />
 The project is based on the iOS Academy course. <br />
-<sup><sub>(There are mock objects, because it requires a Premium subscription on finnhub.io).</sub></sup>
 
 ## Features
 
@@ -22,7 +21,7 @@ The project is based on the iOS Academy course. <br />
 • UISearchController<br />
 • URLSession<br />
 
-![imageStocks](https://github.com/Harnashevich/Stocks/assets/84876109/ffbbe111-0719-4934-be85-019d1b1a53f7)
-
 > [!NOTE]
 > There are mock objects, because it requires a Premium subscription on finnhub.io.
+
+![imageStocks](https://github.com/Harnashevich/Stocks/assets/84876109/ffbbe111-0719-4934-be85-019d1b1a53f7)
