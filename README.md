@@ -2,6 +2,7 @@
 
 Stocks application with the official Finnhub API. <br />
 The project is based on the iOS Academy course. <br />
+<sup><sub>(There are mock objects, because it requires a Premium subscription on finnhub.io).</sub></sup>
 
 ## Features
 
@@ -10,8 +11,6 @@ The project is based on the iOS Academy course. <br />
 • Сompany news<br />
 • Search functionality<br />
 • Adding companies to the list<br />
-
-<sup><sub>(There are mock objects, because it requires a Premium subscription on finnhub.io).</sub></sup>
 
 ## Technology stack
 
