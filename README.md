@@ -8,20 +8,19 @@ The project is based on the iOS Academy course. <br />
 
 ## Features
 
-• Realtime market data<br />
-• Stock charts<br />
-• Сompany news<br />
-• Search functionality<br />
-• Adding companies to the list<br />
+• View photos<br />
+• Double tap to like photos<br />
+• Explore screen<br />
+• Uploading photos from camera and gallery<br />
+• Save photo to Firebase<br />
+• Notification screen with swipe to delete option<br />
+• Profile screen with settings<br />
+• Login/Logout<br />
 
 ## Technology stack
 
 • UIKit (programmatically)<br />
 • MVVM architecture<br />
 • Persistent storage<br />
-• Child View Controller<br />
-• Floating panel<br />
 • UISearchController<br />
 • URLSession<br />
-
-![imageStocks](https://github.com/Harnashevich/Stocks/assets/84876109/ffbbe111-0719-4934-be85-019d1b1a53f7)
