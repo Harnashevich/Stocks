@@ -24,4 +24,6 @@ The project is based on the iOS Academy course. <br />
 • UISearchController<br />
 • URLSession<br />
 
+## Screenshots
+
 ![imageStocks](https://github.com/Harnashevich/Stocks/assets/84876109/ffbbe111-0719-4934-be85-019d1b1a53f7)
